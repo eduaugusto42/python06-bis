@@ -3,6 +3,7 @@
 from typing import Any
 import data_processor
 
+
 class DataStream:
     def __init__(self) -> None:
         self.processors: list[data_processor.DataProcessor] = []
@@ -21,15 +22,17 @@ class DataStream:
                     break
 
             if not handled:
-                print(f"DataStream error - Can't process element in stream: {item}")
+                print("DataStream error - Can't process element "
+                      f"in stream: {item}")
 
     def print_processors_stats(self) -> None:
-        print("== DataStream statistics ==")
+        print("\n== DataStream statistics ==")
         if not self.processors:
             print("No processor found, no data\n")
 
         for proc in self.processors:
-            name = type(proc).__name__
+            class_name = type(proc).__name__
+            name = class_name.removesuffix("Processor") + " Processor"
             total = proc.total_processed
             remaining = proc.remaining
 
@@ -44,7 +47,7 @@ if __name__ == "__main__":
     stream.print_processors_stats()
 
     print("Registering Numeric Processor\n")
-    numeric = data_processor.NumericProcessor() 
+    numeric = data_processor.NumericProcessor()
     stream.register_processor(numeric)
 
     batch: list[Any] = [
@@ -59,7 +62,7 @@ if __name__ == "__main__":
     stream.process_stream(batch)
     stream.print_processors_stats()
 
-    print("\nRegistering other data processor")
+    print("\nRegistering other data processors")
     text = data_processor.TextProcessor()
     stream.register_processor(text)
 
@@ -70,6 +73,8 @@ if __name__ == "__main__":
     stream.process_stream(batch)
     stream.print_processors_stats()
 
+    print("\nConsume some elements from the data processors: "
+          "Numeric 3, Text 2, Log 1")
     for processor, count in [(numeric, 3), (text, 2), (logs, 1)]:
         for _ in range(count):
             processor.output()
