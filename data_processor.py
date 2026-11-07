@@ -104,15 +104,23 @@ class LogProcessor(DataProcessor):
 
 if __name__ == "__main__":
     print("=== Code Nexus - Data Processor ===")
+
     numeric = NumericProcessor()
     print("\nTesting Numeric Processor...")
     print(f"Trying to validate input '42': {numeric.validate(42)}")
     print(f"Trying to validate input 'Hello': {numeric.validate('Hello')}")
+
+    print("Test invalid ingestion of string 'foo' without prior validation:")
     try:
-        numeric.ingest("foo")  # Intentional mypy error: invalid input demo.
+        numeric.ingest("foo") # type: ignore[arg-type]
     except ValueError as error:
         print(f"Got exception: {error}")
-    numeric.ingest([1, 2, 3, 4, 5])
+
+    numeric_data: list[int | float] = [1, 2, 3, 4, 5]
+    print(f"Processing data: {numeric_data}")
+    numeric.ingest(numeric_data)
+
+    print("Extracting 3 values...")
     for _ in range(3):
         rank, value = numeric.output()
         print(f"Numeric value {rank}: {value}")
@@ -121,19 +129,34 @@ if __name__ == "__main__":
     print("\nTesting Text Processor...")
     print(f"Trying to validate input '42': {text.validate(42)}")
     print(f"Trying to validate input 'Hello': {text.validate('Hello')}")
-    text.ingest(["Hello", "Nexus", "World"])
+
+    text_data = ["Hello", "Nexus", "World"]
+    print(f"Processing data: {text_data}")
+    text.ingest(text_data)
+
+    print("Extracting 1 value...")
     rank, value = text.output()
     print(f"Text value {rank}: {value}")
 
     logs = LogProcessor()
     print("\nTesting Log Processor...")
     print(f"Trying to validate input 'Hello': {logs.validate('Hello')}")
-    valid_log = {"log_level": "NOTICE", "log_message": "Connected"}
+
+    valid_log = {
+        "log_level": "NOTICE",
+        "log_message": "Connection to server"
+    }
     print(f"Trying to validate a log entry: {logs.validate(valid_log)}")
-    logs.ingest([
+
+    log_data = [
         {"log_level": "NOTICE", "log_message": "Connection to server"},
         {"log_level": "ERROR", "log_message": "Unauthorized access!!"},
-    ])
+    ]
+
+    print(f"Processing data: {log_data}")
+    logs.ingest(log_data)
+
+    print("Extracting 2 values...")
     for _ in range(2):
         rank, value = logs.output()
         print(f"Log entry {rank}: {value}")
